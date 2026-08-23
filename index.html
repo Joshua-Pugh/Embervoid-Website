@@ -18,6 +18,8 @@
     <nav aria-label="Primary navigation">
       <a href="#book">The Book</a>
       <a href="#letter">The Letter</a>
+      <a href="#calendar">Calendar</a>
+      <a href="#bhalmuck">Bhalmuck</a>
       <a href="#author">The Author</a>
     </nav>
   </header>
@@ -59,6 +61,63 @@
         <blockquote>“You carry a burden. It poisons your path. Corrupts your thoughts. Even now, it claws at your sleep.”</blockquote>
         <div class="violet-rule"></div>
         <p class="letter-note">A sealed letter. A promise between brothers. A voice waiting in the dark.</p>
+      </div>
+    </section>
+
+    <section class="calendar-section" id="calendar">
+      <div class="calendar-intro reveal">
+        <p class="eyebrow">Year 1197 BC · The Fourth Era</p>
+        <h2>The Calendar of Gursol</h2>
+        <p>Twelve months mark the turning seasons. Ivros measures every Full Luna, while the people of Gursol order their lives by seven sacred days.</p>
+      </div>
+
+      <div class="calendar-shell reveal" aria-live="polite">
+        <div class="calendar-heading">
+          <button class="calendar-arrow" id="previous-month" type="button" aria-label="Previous month">←</button>
+          <div>
+            <p class="calendar-season" id="calendar-season">Early Winter</p>
+            <h3 id="calendar-month">Frost-Fall</h3>
+          </div>
+          <button class="calendar-arrow" id="next-month" type="button" aria-label="Next month">→</button>
+        </div>
+        <div class="calendar-facts">
+          <div><span>Days</span><strong id="calendar-days">31</strong></div>
+          <div><span>Full Luna</span><strong id="calendar-luna">Frost-Fall 25</strong></div>
+          <div><span>Year</span><strong>1197 BC</strong></div>
+        </div>
+        <div class="month-track" id="month-track" aria-label="Months of Gursol"></div>
+      </div>
+
+      <div class="week-grid reveal" aria-label="Days of the Gursolian week">
+        <div><strong>Aelth</strong><span>Beginnings</span></div>
+        <div><strong>Turen</strong><span>Mercy</span></div>
+        <div><strong>Vael</strong><span>Vows</span></div>
+        <div><strong>Varrek</strong><span>Resolve</span></div>
+        <div><strong>Ivrin</strong><span>Memory</span></div>
+        <div><strong>Velis</strong><span>Warding</span></div>
+        <div><strong>Darran</strong><span>Remembrance</span></div>
+      </div>
+
+      <div class="last-flame reveal" id="last-flame">
+        <button class="lantern" id="lantern" type="button" aria-pressed="false" aria-label="Light the Last Flame"><i></i></button>
+        <div>
+          <p class="eyebrow">The Darran observance</p>
+          <h3>Light the Last Flame</h3>
+          <p>At dusk, families speak the names of their dead and keep a lamp burning until morning.</p>
+          <p class="flame-words">“We remember their names, so he cannot erase them.”</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bhalmuck-section" id="bhalmuck">
+      <div class="tavern-glow" aria-hidden="true"></div>
+      <div class="wisdom-card reveal">
+        <div class="tankard" aria-hidden="true"><span></span></div>
+        <p class="eyebrow">A word from the road</p>
+        <h2>Bhalmuck’s Unsolicited Wisdom</h2>
+        <blockquote id="bhalmuck-quote">“I’ve met coffins with more warmth in them.”</blockquote>
+        <p class="quote-credit">— Bhalmuck Stormbane</p>
+        <button class="another-round" id="another-round" type="button">Another Round</button>
       </div>
     </section>
 
