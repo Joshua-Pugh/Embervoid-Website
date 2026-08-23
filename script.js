@@ -114,15 +114,45 @@ const wisdom = [
   'Bhalmuck denies ever saying that.',
   'The dwarf is currently unavailable for comment.'
 ];
-let wisdomIndex = 0;
 const quote = document.querySelector('#bhalmuck-quote');
 const quoteCredit = document.querySelector('#quote-credit');
+let lastWisdom = wisdom[0];
+let firstWisdomBag = true;
+let wisdomBag = [];
+
+function isBhalmuckQuote(item) {
+  return item.startsWith('“');
+}
+
+function refillWisdomBag() {
+  wisdomBag = firstWisdomBag ? wisdom.filter(item => item !== lastWisdom) : [...wisdom];
+  firstWisdomBag = false;
+
+  for (let index = wisdomBag.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [wisdomBag[index], wisdomBag[randomIndex]] = [wisdomBag[randomIndex], wisdomBag[index]];
+  }
+
+  if (wisdomBag[0] === lastWisdom || (!isBhalmuckQuote(lastWisdom) && !isBhalmuckQuote(wisdomBag[0]))) {
+    const replacement = wisdomBag.findIndex((item, index) => index > 0 && item !== lastWisdom && isBhalmuckQuote(item));
+    if (replacement > 0) [wisdomBag[0], wisdomBag[replacement]] = [wisdomBag[replacement], wisdomBag[0]];
+  }
+
+  for (let index = 1; index < wisdomBag.length; index++) {
+    if (!isBhalmuckQuote(wisdomBag[index - 1]) && !isBhalmuckQuote(wisdomBag[index])) {
+      const replacement = wisdomBag.findIndex((item, laterIndex) => laterIndex > index && isBhalmuckQuote(item));
+      if (replacement > index) [wisdomBag[index], wisdomBag[replacement]] = [wisdomBag[replacement], wisdomBag[index]];
+    }
+  }
+}
+
 document.querySelector('#another-round').addEventListener('click', () => {
-  wisdomIndex = (wisdomIndex + 1) % wisdom.length;
+  if (!wisdomBag.length) refillWisdomBag();
+  lastWisdom = wisdomBag.shift();
   quote.classList.remove('quote-change');
   void quote.offsetWidth;
-  quote.textContent = wisdom[wisdomIndex];
-  quoteCredit.hidden = !wisdom[wisdomIndex].startsWith('“');
+  quote.textContent = lastWisdom;
+  quoteCredit.hidden = !isBhalmuckQuote(lastWisdom);
   quote.classList.add('quote-change');
 });
 
