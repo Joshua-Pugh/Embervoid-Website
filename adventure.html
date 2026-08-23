@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Play The Ruins Beneath the Moss, a short solo adventure from the campaign that inspired The Cursed War.">
+  <title>The Ruins Beneath the Moss | The Cursed War</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="adventure.css">
+</head>
+<body>
+  <div class="torch-glow" aria-hidden="true"></div>
+  <header class="game-header">
+    <a href="index.html#origins" class="back-link">← Return to the archive</a>
+    <p>The Cursed War · Campaign Artifact</p>
+    <button id="restart" class="quiet-button" type="button">Restart</button>
+  </header>
+
+  <main class="game-shell">
+    <section id="welcome-screen" class="setup-screen">
+      <p class="eyebrow">A solo browser adventure</p>
+      <h1>The Ruins<br><span>Beneath the Moss</span></h1>
+      <p class="opening">A rumor of dwarven treasure has drawn you north of West Gate. Somewhere beneath an ancient statue, stone remembers what the forest has forgotten.</p>
+      <div class="knowledge-card">
+        <h2>Before we begin—do you know how to play D&amp;D?</h2>
+        <p>This only changes how much the game explains. The adventure is the same.</p>
+        <div class="setup-actions">
+          <button type="button" data-experience="new">No, teach me as I play</button>
+          <button type="button" data-experience="veteran">Yes, hand me the dice</button>
+        </div>
+      </div>
+      <button type="button" id="continue-save" class="continue-save" hidden>Continue saved adventure</button>
+    </section>
+
+    <section id="character-screen" class="setup-screen" hidden>
+      <p class="eyebrow">Choose your explorer</p>
+      <h2>Who approaches the statue?</h2>
+      <p class="screen-copy">Choose a ready-made adventurer, or give one of them your own name. Each finds a different path through the ruins.</p>
+      <div class="character-grid" id="character-grid"></div>
+      <div class="name-character">
+        <label for="character-name">Explorer’s name <span>(optional)</span></label>
+        <input id="character-name" maxlength="22" autocomplete="off" placeholder="Enter a name">
+      </div>
+    </section>
+
+    <section id="game-screen" hidden>
+      <aside class="character-sheet">
+        <div class="portrait-rune" id="portrait-rune">ᚦ</div>
+        <p class="eyebrow" id="hero-class">Dwarven Delver</p>
+        <h2 id="hero-name">Branna Stonehand</h2>
+        <div class="vitals">
+          <div><span>Health</span><strong id="health">10</strong></div>
+          <div><span>Light</span><strong id="light">5</strong></div>
+          <div><span>Supplies</span><strong id="supplies">3</strong></div>
+        </div>
+        <div class="abilities" id="abilities"></div>
+        <div class="clue-box">
+          <span>Recovered clues</span>
+          <ul id="clue-list"><li>None yet</li></ul>
+        </div>
+        <button id="journal-toggle" class="journal-toggle" type="button" aria-expanded="false">Open journey log</button>
+      </aside>
+
+      <article class="story-panel">
+        <div class="location-line"><span id="chapter-number">I</span><p id="location">The Road North</p></div>
+        <h1 id="scene-title">A Rumor in West Gate</h1>
+        <div id="tutorial" class="tutorial" hidden></div>
+        <div id="story-text" class="story-text"></div>
+        <div id="roll-stage" class="roll-stage" hidden aria-live="polite">
+          <button id="game-die" class="game-die" type="button" aria-label="Roll the twenty-sided die"><span id="game-roll">20</span></button>
+          <div>
+            <p id="roll-formula">Roll + bonus against the difficulty</p>
+            <strong id="roll-verdict">Click the die to roll</strong>
+          </div>
+        </div>
+        <div id="choices" class="choices"></div>
+      </article>
+    </section>
+
+    <aside id="journal" class="journal" aria-hidden="true">
+      <button id="journal-close" type="button" aria-label="Close journey log">×</button>
+      <p class="eyebrow">Journey log</p>
+      <h2>What the stone remembers</h2>
+      <ol id="journal-entries"></ol>
+    </aside>
+  </main>
+
+  <footer>Adapted from Joshua Pugh’s original 2021 campaign notes.</footer>
+  <script src="adventure.js"></script>
+</body>
+</html>
