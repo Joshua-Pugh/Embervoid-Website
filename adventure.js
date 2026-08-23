@@ -1,11 +1,11 @@
-const SAVE_KEY = 'embervoid-ruins-save-v1';
+const SAVE_KEY = 'embervoid-ruins-save-v2';
 const characters = {
-  delver: {name:'Branna Stonehand', role:'Dwarven Delver', rune:'ᚦ', blurb:'A mason, tunnel-runner, and stubborn judge of stonework.', gift:'Reads dwarven stone and resists traps.', abilities:{Investigation:3,Perception:1,Might:2,Lore:2}},
-  sellsword: {name:'Corren Vale', role:'Human Sellsword', rune:'⚔', blurb:'A practical blade who considers a locked door a personal insult.', gift:'Tougher in danger and skilled at forcing obstacles.', abilities:{Investigation:0,Perception:2,Might:3,Lore:0}},
-  scholar: {name:'Elowen Marr', role:'Elven Scholar', rune:'ᚱ', blurb:'A patient reader of dead languages and inconvenient warnings.', gift:'Excels at lore, riddles, and careful observation.', abilities:{Investigation:2,Perception:2,Might:0,Lore:3}}
+  delver: {name:'Branna Stonehand', role:'Dwarven Delver', rune:'ᚦ', hp:14, ac:13, blurb:'A mason, tunnel-runner, and stubborn judge of stonework.', gift:'Reads dwarven stone and resists traps.', abilities:{Investigation:3,Perception:1,Might:2,Lore:2}},
+  sellsword: {name:'Corren Vale', role:'Human Sellsword', rune:'⚔', hp:12, ac:14, blurb:'A practical blade who considers a locked door a personal insult.', gift:'Tougher in danger and skilled at forcing obstacles.', abilities:{Investigation:0,Perception:2,Might:3,Lore:0}},
+  scholar: {name:'Elowen Marr', role:'Elven Scholar', rune:'ᚱ', hp:10, ac:11, blurb:'A patient reader of dead languages and inconvenient warnings.', gift:'Excels at lore, riddles, and careful observation.', abilities:{Investigation:2,Perception:2,Might:0,Lore:3}}
 };
 
-let state = {experience:'new',character:null,name:'',health:10,light:5,supplies:3,clues:[],journal:[],scene:'road',pending:null,ended:false};
+let state = {experience:'new',character:null,name:'',health:10,maxHealth:10,ac:12,light:5,supplies:3,poisoned:false,clues:[],journal:[],scene:'road',pending:null,combat:null,defending:false,ended:false};
 const $ = selector => document.querySelector(selector);
 const welcome = $('#welcome-screen');
 const characterScreen = $('#character-screen');
@@ -30,8 +30,9 @@ const scenes = {
     ['Search the skeleton’s hand','Investigation check · DC 11',()=>check('Investigation',11,'scroll','viper','Carefully recover what remains.')],
     ['Search the entire camp','Perception check · DC 12',()=>check('Perception',12,'supplies','viper','Look for anything useful.')]
   ]},
-  supplies:{chapter:'III',location:'The Abandoned Camp',title:'What the Dead Left Behind',text:`<p>Beneath a collapsed crate you find a dry torch and a vial whose bitter smell suggests antivenom.</p><p>The skeleton still clutches something against its ribs.</p>`,onEnter:()=>{state.supplies++;state.light++;log('Recovered a torch and old antivenom.');save();},choices:[['Open the skeleton’s hand','Recover the damaged scroll',()=>go('scroll')]]},
-  viper:{chapter:'III',location:'The Abandoned Camp',title:'The Grass Moves',text:`<p>You reach between the wagon spokes. A viper strikes from the leaves. Its fangs glance across your wrist before your hand closes around a brittle scroll.</p>`,onEnter:()=>damage('health',2,'A viper bites before escaping.'),choices:[['Read the damaged scroll','Some writing remains',()=>go('scroll')]]},
+  supplies:{chapter:'III',location:'The Abandoned Camp',title:'What the Dead Left Behind',text:`<p>Beneath a collapsed crate you find a dry torch and a stoppered vial labeled with a faded serpent. The bitter-smelling antivenom is old—but still clear.</p><p>The skeleton still clutches something against its ribs.</p>`,onEnter:()=>{state.supplies++;state.light++;if(state.poisoned){state.poisoned=false;state.health=Math.min(state.maxHealth,state.health+2);log('Drank the antivenom. The poison condition ends and 2 health returns.');}else log('Recovered a torch and a sealed antivenom.');save();},choices:[['Open the skeleton’s hand','Recover the damaged scroll',()=>go('scroll')]]},
+  viper:{chapter:'III',location:'The Abandoned Camp',title:'The Grass Moves',text:`<p>You reach between the wagon spokes. A viper strikes from the leaves and buries its fangs in your wrist before vanishing under the wagon.</p><p>Heat races up your arm. Your vision tightens. You are poisoned—and the skeleton’s scroll is still clutched in your hand.</p>`,onEnter:()=>{state.poisoned=true;damage('health',1,'The viper poisons you.');},choices:[['Search the burned supply crates','Investigation check · DC 10',()=>check('Investigation',10,'supplies','poisonWorse','Search the camp for antivenom.')],['Read the scroll immediately','The poison remains active',()=>go('scroll')]]},
+  poisonWorse:{chapter:'III',location:'The Abandoned Camp',title:'A Bitter Pulse',text:`<p>You overturn moldy crates while the poison works deeper. Your fingers begin to shake. Somewhere in this camp the explorers must have kept medicine.</p><p>You can keep searching, or bind the wound and gamble that you can survive the ruins.</p>`,onEnter:()=>damage('health',2,'The poison deals 2 damage.'),choices:[['Search the ruined tent','Perception check · DC 9',()=>check('Perception',9,'supplies','poisonWorse','Look for the expedition medicine kit.')],['Use a supply to slow the poison','The condition remains, but recover 2 health',()=>{if(spend('supplies')){heal(2);go('scroll');}}]]},
   scroll:{chapter:'III',location:'The Abandoned Camp',title:'Day One Hundred and Sixty-Five',text:`<p>The explorer’s final account is fragmented by rain and age. He writes of a “runic puzzle of death,” of men claimed by the statue, and of a poisonous bite.</p><p>Only one complete line remains: <em>What always runs but never walks, murmurs but never talks, has a bed but never sleeps, and a mouth but never eats?</em></p>`,onEnter:()=>addClue('The river riddle'),choices:[['Return to the statue','Bring the question to the runes',()=>go('riddle')]]},
   riddle:{chapter:'IV',location:'The Forgotten Clearing',title:'The Runic Answer',text:`<p>The buttons wait beneath the statue. The dead explorer’s question asks for something that runs, murmurs, has a bed and a mouth, yet never walks, talks, sleeps, or eats.</p><p>Press the answer into the stone.</p>`,choices:[
     ['RIVER','Press RUN · BED · MOUTH',()=>go('entrance')],
@@ -41,14 +42,15 @@ const scenes = {
   entrance:{chapter:'V',location:'Beneath the Statue',title:'The Mountain Opens',text:`<p>The final rune sinks beneath your thumb. Stone grinds against stone. The statue turns slowly toward the north as a stairway opens beneath its base.</p><p>Cold air rises from below, carrying the smell of iron, river water, and a forge extinguished centuries ago.</p>`,onEnter:()=>{addClue('The statue’s answer: river');log('Opened the hidden dwarven stair.');},choices:[['Light a torch and descend','Spend 1 light',()=>{damage('light',1);go('hall');}]]},
   hall:{chapter:'VI',location:'Hall of Fallen Hammers',title:'A Floor That Remembers',text:`<p>Stone hammers hang above a tiled passage. Some tiles bear the same river pattern carved around the statue; others show broken crowns.</p><p>A skeleton in rusted mail lies halfway across. Its shield is folded inward.</p>`,choices:[
     ['Follow the river-marked tiles','Use the clue from above',()=>state.clues.includes('Stone river carving')?go('gallery'):check('Investigation',13,'gallery','hammer','Find the safe pattern.')],
-    ['Jam the hammer mechanism','Might check · DC 14',()=>check('Might',14,'forge','hammer','Force the ancient gears.')]
+    ['Jam the hammer mechanism','Might check · DC 14',()=>check('Might',14,'gallery','hammer','Force the ancient gears.')]
   ]},
   hammer:{chapter:'VI',location:'Hall of Fallen Hammers',title:'The Hammer Falls',text:`<p>A tile sinks. The ceiling answers.</p><p>You throw yourself forward as a stone hammer obliterates the passage behind you. The way back is sealed, but you are alive.</p>`,onEnter:()=>damage('health',3,'The trap catches your shoulder.'),choices:[['Continue through the cracked wall','No road back',()=>go('gallery')]]},
   gallery:{chapter:'VII',location:'The Flooded Gallery',title:'The River Below',text:`<p>Black water divides the gallery. A narrow bridge has collapsed, leaving only three carved stepping stones.</p><p>RUN. BED. MOUTH. The words from the statue repeat along the walls, but one stone is a false reflection.</p>`,choices:[
-    ['Trust the river sequence','Lore check · DC 11',()=>check('Lore',11,'forge','flood','Read the order correctly.')],
-    ['Leap across the broken bridge','Might check · DC 13',()=>check('Might',13,'forge','flood','Clear the flooded gap.')]
+    ['Trust the river sequence','Lore check · DC 11',()=>check('Lore',11,'sentry','flood','Read the order correctly.')],
+    ['Leap across the broken bridge','Might check · DC 13',()=>check('Might',13,'sentry','flood','Clear the flooded gap.')]
   ]},
-  flood:{chapter:'VII',location:'The Flooded Gallery',title:'The Water Takes Its Price',text:`<p>The stone rolls beneath your boot. Freezing water closes over your head.</p><p>You drag yourself onto the far ledge, but part of your pack disappears into the dark current.</p>`,onEnter:()=>{damage('health',1,'The cold leaves you shaking.');damage('supplies',1,'The river claims a supply.');},choices:[['Enter the forge','Follow the warm draft',()=>go('forge')]]},
+  flood:{chapter:'VII',location:'The Flooded Gallery',title:'The Water Takes Its Price',text:`<p>The stone rolls beneath your boot. Freezing water closes over your head.</p><p>You drag yourself onto the far ledge, but part of your pack disappears into the dark current.</p>`,onEnter:()=>{damage('health',1,'The cold leaves you shaking.');damage('supplies',1,'The river claims a supply.');},choices:[['Follow the warm draft','Something moves beyond the arch',()=>go('sentry')]]},
+  sentry:{chapter:'VIII',location:'The Sentry Passage',title:'Bronze Wakes in the Dark',text:`<p>A bronze dwarf kneels before the forge doors, both hands resting upon a stone axe. As you cross the threshold, green fire opens behind its metal eyes.</p><p>“THE FORGE REMEMBERS,” it says, rising. “PROVE THAT YOU DO.”</p>`,choices:[['Stand your ground','Roll initiative',()=>startCombat()]]},
   forge:{chapter:'VIII',location:'The Silent Forge',title:'The Keeper Without a Name',text:`<p>An enormous forge dominates the chamber. Its coals are cold, yet one bronze automaton still stands watch beside the vault door.</p><p>“NAME YOUR PURPOSE,” it commands. “PLUNDER, MEMORY, OR FLAME?”</p>`,choices:[
     ['Memory','Return the explorer’s story to the stone',()=>go('memoryEnd')],
     ['Flame','Repair the ancient forge',()=>check('Lore',14,'flameEnd','keeper','Restore rather than take.')],
@@ -58,7 +60,8 @@ const scenes = {
   memoryEnd:{chapter:'IX',location:'The Sealed Vault',title:'What Stone Preserves',text:`<p>The keeper takes the explorer’s scroll with impossible gentleness. Runes kindle across the vault—not names of kings, but names of workers, masons, parents, and children.</p><p>You leave with no crown and no mountain of gold. You leave carrying the names of a people the world had forgotten.</p>`,ending:'THE KEEPER OF NAMES'},
   flameEnd:{chapter:'IX',location:'The Sealed Vault',title:'A Fire Rekindled',text:`<p>Your hands rebuild the broken channel. A single ember awakens beneath the forge. It gives no heat, yet every rune in the chamber gleams like sunrise.</p><p>The keeper gives you a small iron coal. Outside, it will glow whenever forgotten workmanship lies near.</p>`,ending:'THE LAST EMBER'},
   goldEnd:{chapter:'IX',location:'The Sealed Vault',title:'The Dwarf-Gold Bargain',text:`<p>The keeper lowers its hammer. Perhaps strength was the answer—or perhaps the ancient machine has developed a sense of humor.</p><p>It grants you one coin. By dawn it has become twenty. By sunset, all twenty have become worthless river stones.</p>`,ending:'THE VERY TEMPORARY FORTUNE'},
-  darkEnd:{chapter:'IX',location:'The Collapsed Passage',title:'Some Doors Stay Closed',text:`<p>The keeper rejects your empty offering. You escape through a collapsing passage with the mountain groaning behind you.</p><p>The statue has returned to its place when you emerge. No seam remains beneath the moss.</p>`,ending:'THE EMPTY-HANDED SURVIVOR'}
+  darkEnd:{chapter:'IX',location:'The Collapsed Passage',title:'Some Doors Stay Closed',text:`<p>The keeper rejects your empty offering. You escape through a collapsing passage with the mountain groaning behind you.</p><p>The statue has returned to its place when you emerge. No seam remains beneath the moss.</p>`,ending:'THE EMPTY-HANDED SURVIVOR'},
+  defeat:{chapter:'—',location:'The Ruins Beneath the Moss',title:'The Torch Goes Out',text:`<p>Your knees strike the stone. The last flame gutters, and the runes retreat into darkness.</p><p>Somewhere above, moss begins growing over the statue again. Another explorer may find the road. Your journey ends here.</p>`,ending:'FALLEN BENEATH THE MOSS'}
 };
 
 function renderCharacters(){
@@ -70,7 +73,7 @@ function renderCharacters(){
 }
 
 function startGame(key){
-  state.character=key;state.name=$('#character-name').value.trim()||characters[key].name;
+  const c=characters[key];state.character=key;state.name=$('#character-name').value.trim()||c.name;state.maxHealth=c.hp;state.health=c.hp;state.ac=c.ac;
   welcome.hidden=true;characterScreen.hidden=true;gameScreen.hidden=false;
   hydrateSheet();go(state.scene,true);
 }
@@ -81,18 +84,22 @@ function hydrateSheet(){
 }
 
 function updateStats(){
-  $('#health').textContent=Math.max(0,state.health);$('#light').textContent=Math.max(0,state.light);$('#supplies').textContent=Math.max(0,state.supplies);
+  $('#health').textContent=`${Math.max(0,state.health)}/${state.maxHealth}`;$('#armor').textContent=state.ac;$('#light').textContent=Math.max(0,state.light);$('#supplies').textContent=Math.max(0,state.supplies);
+  $('#condition').classList.toggle('poisoned',state.poisoned);$('#condition strong').textContent=state.poisoned?'Poisoned':'Healthy';
   $('#clue-list').innerHTML=state.clues.length?state.clues.map(c=>`<li>${c}</li>`).join(''):'<li>None yet</li>';
   $('#journal-entries').innerHTML=state.journal.map(x=>`<li>${x}</li>`).join('');save();
 }
 
 function go(id,initial=false){
+  if(state.health<=0)id='defeat';
   state.scene=id;state.pending=null;const s=scenes[id];
   if(!initial&&s.onEnter)s.onEnter();
+  if(!initial&&state.poisoned&&['scroll','riddle','entrance','hall','gallery','sentry'].includes(id))damage('health',1,'Poison deals 1 damage as time passes.');
+  if(state.health<=0&&id!=='defeat')return go('defeat');
   $('#chapter-number').textContent=s.chapter;$('#location').textContent=s.location;$('#scene-title').textContent=s.title;$('#story-text').innerHTML=s.text;
   $('#roll-stage').hidden=true;$('#roll-stage').className='roll-stage';
-  if(state.experience==='new'&&['road','clearing','hall'].includes(id)){
-    $('#tutorial').hidden=false;$('#tutorial').textContent=id==='road'?'When an action is uncertain, you roll a twenty-sided die. Your character adds an ability bonus. Meet or beat the Difficulty Class (DC) to succeed.':id==='clearing'?'Choices reveal different routes. Failure does not end the adventure—it creates consequences and another way forward.':'Clues you discovered earlier can sometimes bypass a roll entirely.';
+  if(state.experience==='new'&&['road','clearing','hall','sentry'].includes(id)){
+    $('#tutorial').hidden=false;$('#tutorial').textContent=id==='road'?'When an action is uncertain, you roll a twenty-sided die. Your character adds an ability bonus. Meet or beat the Difficulty Class (DC) to succeed.':id==='clearing'?'Choices reveal different routes. Failure does not end the adventure—it creates consequences and another way forward.':id==='sentry'?'Combat happens in rounds. Roll initiative to see who acts first. An attack must meet the target’s Armor Class (AC), then rolls damage. You may attack, defend, or spend a supply to heal.':'Clues you discovered earlier can sometimes bypass a roll entirely.';
   }else $('#tutorial').hidden=true;
   renderChoices(s);
   if(s.ending){state.ended=true;log(`Completed the adventure: ${s.ending}.`);renderEnding(s.ending);}
@@ -105,21 +112,66 @@ function renderChoices(scene){
 }
 
 function check(ability,dc,success,failure,note){
-  const bonus=characters[state.character].abilities[ability];state.pending={ability,dc,success,failure,bonus,note};
+  const bonus=characters[state.character].abilities[ability];state.pending={type:'skill',ability,dc,success,failure,bonus,note};
   $('#choices').replaceChildren();$('#roll-stage').hidden=false;$('#roll-stage').className='roll-stage';$('#game-roll').textContent='?';
   $('#roll-formula').textContent=`${ability}: d20 + ${bonus} against DC ${dc}`;$('#roll-verdict').textContent='Click the die to roll';
 }
 
 $('#game-die').addEventListener('click',()=>{
-  if(!state.pending)return;const p=state.pending;state.pending=null;const raw=Math.floor(Math.random()*20)+1,total=raw+p.bonus,success=raw===20||total>=p.dc;
+  if(!state.pending)return;const p=state.pending;state.pending=null;const raw=Math.floor(Math.random()*20)+1,total=raw+p.bonus,success=raw===20||(raw!==1&&total>=p.dc);
   const die=$('#game-die');die.classList.remove('rolling');void die.offsetWidth;die.classList.add('rolling');$('#game-roll').textContent=raw;
   $('#roll-stage').classList.add(success?'success':'failure');$('#roll-verdict').textContent=success?`Success — ${raw} + ${p.bonus} = ${total}`:`Failure — ${raw} + ${p.bonus} = ${total}`;
-  log(`${p.note} Rolled ${raw} + ${p.bonus} (${total}) against DC ${p.dc}: ${success?'success':'failure'}.`);
-  setTimeout(()=>go(success?p.success:p.failure),900);
+  if(p.type==='skill'){
+    log(`${p.note} Rolled ${raw} + ${p.bonus} (${total}) against DC ${p.dc}: ${success?'success':'failure'}.`);
+    setTimeout(()=>go(success?p.success:p.failure),900);
+  }else if(p.type==='initiative'){
+    log(`Initiative: ${raw} + ${p.bonus} = ${total}. ${success?'You act first.':'The sentry acts first.'}`);
+    setTimeout(()=>success?combatTurn():enemyTurn(),900);
+  }else if(p.type==='attack'){
+    if(success){const dealt=raw===20?Math.floor(Math.random()*6)+Math.floor(Math.random()*6)+2:Math.floor(Math.random()*6)+2;state.combat.hp=Math.max(0,state.combat.hp-dealt);log(`${raw===20?'Critical hit! ':''}Attack roll ${total} hits AC ${p.dc} for ${dealt} damage.`);}
+    else log(`Attack roll ${total} misses AC ${p.dc}.`);
+    setTimeout(()=>state.combat.hp<=0?winCombat():enemyTurn(),900);
+  }
 });
 
+function startCombat(){
+  state.combat={name:'Runic Sentry',hp:13,maxHp:13,ac:12,attack:3};state.defending=false;
+  const bonus=characters[state.character].abilities.Perception;
+  state.pending={type:'initiative',bonus,dc:12};$('#choices').replaceChildren();$('#roll-stage').hidden=false;$('#roll-stage').className='roll-stage';$('#game-roll').textContent='?';
+  $('#roll-formula').textContent=`Initiative: d20 + ${bonus} against the sentry’s 12`;$('#roll-verdict').textContent='Roll to determine who acts first';save();
+}
+
+function combatTurn(){
+  state.defending=false;state.pending=null;$('#roll-stage').hidden=true;updateCombatText();
+  const box=$('#choices');box.replaceChildren();
+  addChoice('Attack with your weapon',`d20 + ${characters[state.character].abilities.Might} vs AC ${state.combat.ac}`,()=>attack());
+  addChoice('Take the Defend action','Gain +2 AC against the next attack',()=>{state.defending=true;log('You brace for the sentry’s attack.');enemyTurn();});
+  if(state.supplies>0)addChoice('Use a healing supply','Spend 1 supply and recover 1d6 + 2 health',()=>{state.supplies--;const amount=Math.floor(Math.random()*6)+3;heal(amount);log(`Used a healing supply and recovered ${amount} health.`);enemyTurn();});
+  save();
+}
+
+function attack(){
+  const bonus=characters[state.character].abilities.Might;state.pending={type:'attack',bonus,dc:state.combat.ac};
+  $('#choices').replaceChildren();$('#roll-stage').hidden=false;$('#roll-stage').className='roll-stage';$('#game-roll').textContent='?';
+  $('#roll-formula').textContent=`Attack: d20 + ${bonus} against AC ${state.combat.ac}`;$('#roll-verdict').textContent='Roll to attack the Runic Sentry';
+}
+
+function enemyTurn(){
+  if(!state.combat||state.combat.hp<=0)return winCombat();
+  const raw=Math.floor(Math.random()*20)+1,total=raw+state.combat.attack,target=state.ac+(state.defending?2:0),hit=raw===20||total>=target;
+  if(hit){const amount=Math.floor(Math.random()*4)+1;damage('health',amount,`The sentry rolls ${raw} + ${state.combat.attack} (${total}), hits AC ${target}, and deals ${amount} damage.`);}
+  else log(`The sentry rolls ${raw} + ${state.combat.attack} (${total}) and misses AC ${target}.`);
+  if(state.health<=0)return go('defeat');
+  setTimeout(combatTurn,650);
+}
+
+function winCombat(){log('The Runic Sentry falls silent. The forge doors open.');state.combat=null;state.defending=false;go('forge');}
+function updateCombatText(){$('#story-text').innerHTML=`<p>The Runic Sentry advances through the dark, stone axe raised. Its bronze body bears fresh marks from the fight.</p><div class="enemy-status"><span>${state.combat.name}</span><strong>${state.combat.hp}/${state.combat.maxHp} health · AC ${state.combat.ac}</strong><i style="--enemy-health:${state.combat.hp/state.combat.maxHp*100}%"></i></div>`;}
+function addChoice(label,hint,action){const b=document.createElement('button');b.type='button';b.className='choice';b.innerHTML=`<span>${label}</span><small>${hint}</small>`;b.addEventListener('click',action);$('#choices').append(b);}
+
 function wrongRiddle(){damage('health',1,'A hidden dart answers the wrong rune.');log('Pressed the wrong answer at the statue.');go('riddle');}
-function damage(stat,amount,note){state[stat]=Math.max(0,state[stat]-amount);if(note)log(note);updateStats();if(state.health<=0){state.health=1;log('You narrowly avoid becoming part of the ruins.');}}
+function damage(stat,amount,note){state[stat]=Math.max(0,state[stat]-amount);if(note)log(note);updateStats();}
+function heal(amount){state.health=Math.min(state.maxHealth,state.health+amount);updateStats();}
 function spend(stat){if(state[stat]<=0){log(`You have no ${stat} remaining.`);go('camp');return false;}damage(stat,1,`Spent 1 ${stat}.`);return true;}
 function addClue(clue){if(!state.clues.includes(clue)){state.clues.push(clue);log(`Recovered clue: ${clue}.`);updateStats();}}
 function log(entry){state.journal.push(entry);updateStats();}

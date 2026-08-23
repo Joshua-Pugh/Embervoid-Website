@@ -1,0 +1,11 @@
+.vitals{grid-template-columns:repeat(4,1fr)!important}
+.condition{display:flex;justify-content:space-between;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--line)}
+.condition span{text-transform:uppercase;letter-spacing:.13em;color:#706c64;font-size:.49rem}
+.condition strong{font-family:Cinzel,serif;font-size:.72rem;color:var(--success)}
+.condition.poisoned strong{color:#9fbd67;text-shadow:0 0 14px #7faa45}
+.enemy-status{position:relative;margin-top:2rem;padding:1rem 1.2rem;border:1px solid #a34b3d55;background:#160b09}
+.enemy-status span,.enemy-status strong{display:flex;justify-content:space-between;font-family:Inter,sans-serif;font-size:.65rem}
+.enemy-status span{color:#d5c9b8;text-transform:uppercase;letter-spacing:.16em}
+.enemy-status strong{margin-top:.5rem;color:#968d80;font-weight:400}
+.enemy-status i{display:block;height:3px;margin-top:1rem;background:linear-gradient(90deg,#9d493e var(--enemy-health),#32211f var(--enemy-health));transition:.5s}
+@media(max-width:450px){.vitals strong{font-size:1rem}.vitals span{font-size:.42rem}}
