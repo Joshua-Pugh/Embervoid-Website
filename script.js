@@ -156,6 +156,31 @@ document.querySelector('#another-round').addEventListener('click', () => {
   quote.classList.add('quote-change');
 });
 
+const d20 = document.querySelector('#d20');
+const rollNumber = document.querySelector('#roll-number');
+const investigationResult = document.querySelector('#investigation-result');
+const investigationOutcomes = [
+  [3, 'Your investigation check has failed spectacularly.'],
+  [5, 'Bhalmuck blames the road.'],
+  [8, 'Most of the writing has faded.'],
+  [11, 'A white piece of fabric moves between the trees.'],
+  [14, 'The abandoned camp contains a damaged scroll.'],
+  [17, 'You uncover fine stonework beneath the moss.'],
+  [20, 'The statue is hiding something.']
+];
+
+function rollInvestigation() {
+  const roll = Math.floor(Math.random() * 20) + 1;
+  const outcome = investigationOutcomes.find(([maximum]) => roll <= maximum)[1];
+  d20.classList.remove('rolling');
+  void d20.offsetWidth;
+  d20.classList.add('rolling');
+  rollNumber.textContent = roll;
+  investigationResult.textContent = outcome;
+}
+d20.addEventListener('click', rollInvestigation);
+document.querySelector('#roll-investigation').addEventListener('click', rollInvestigation);
+
 addEventListener('resize', resize);
 resize();
 draw();
