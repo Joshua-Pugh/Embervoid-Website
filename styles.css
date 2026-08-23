@@ -15,10 +15,10 @@
 .letter-card::after{
   position:absolute;
   pointer-events:none;
-  color:#b75cff;
+  color:#d49aff;
   font-family:"Times New Roman",serif;
   font-weight:400;
-  text-shadow:0 0 .35rem #8c28d9,0 0 1.2rem #5a118c;
+  text-shadow:0 0 .3rem #c46cff,0 0 1rem #922fe0,0 0 2rem #5a118c;
   opacity:0;
   z-index:1;
 }
@@ -27,21 +27,21 @@
   top:18%;
   left:7%;
   max-width:8rem;
-  font-size:clamp(.8rem,1.25vw,1.2rem);
+  font-size:clamp(1rem,1.55vw,1.5rem);
   line-height:3.1;
   letter-spacing:.7em;
   writing-mode:vertical-rl;
   transform:rotate(7deg);
-  animation:rune-left 13s ease-in-out infinite;
+  animation:rune-left 10s ease-in-out infinite;
 }
 .book-section::before{
   content:"⟡ ᚱ ⋮ ᛉ ᛁ ◇ ᚾ ⟁ ᛟ";
   right:4%;
   top:13%;
-  font-size:clamp(.7rem,1vw,1rem);
+  font-size:clamp(.9rem,1.2vw,1.2rem);
   letter-spacing:1.05em;
   transform:rotate(-9deg) skewX(-6deg);
-  animation:rune-drift 17s 2s ease-in-out infinite;
+  animation:rune-drift 13s 1s ease-in-out infinite;
 }
 .letter-section{position:relative;overflow:hidden}
 .letter-section::before{
@@ -49,10 +49,10 @@
   left:50%;
   top:12%;
   width:max-content;
-  font-size:clamp(.8rem,1.15vw,1.1rem);
+  font-size:clamp(1rem,1.35vw,1.35rem);
   letter-spacing:1.1em;
   transform:translateX(-50%);
-  animation:rune-warning 11s 1s ease-in-out infinite;
+  animation:rune-warning 9s .5s ease-in-out infinite;
 }
 .letter-card{position:relative;z-index:2}
 .letter-card::before,
@@ -60,7 +60,7 @@
   content:"ᚷ\A⋮\A⟡\Aᛉ\A◇";
   white-space:pre;
   top:50%;
-  font-size:.75rem;
+  font-size:1rem;
   line-height:2.4;
   transform:translateY(-50%);
   animation:rune-edge 9s ease-in-out infinite;
@@ -68,28 +68,28 @@
 .letter-card::before{left:-2.6rem}
 .letter-card::after{right:-2.6rem;transform:translateY(-50%) scaleX(-1);animation-delay:-4.5s}
 @keyframes rune-left{
-  0%,12%,100%{opacity:0;filter:blur(5px);transform:translateY(2rem) rotate(7deg)}
-  24%,37%{opacity:.22;filter:blur(0);transform:translateY(0) rotate(7deg)}
-  43%{opacity:.05;letter-spacing:1.15em}
-  55%,88%{opacity:0;filter:blur(4px)}
+  0%,100%{opacity:.08;filter:blur(3px);transform:translateY(1rem) rotate(7deg)}
+  15%,50%{opacity:.52;filter:blur(0);transform:translateY(0) rotate(7deg)}
+  58%{opacity:.18;letter-spacing:1.15em}
+  72%,88%{opacity:.06;filter:blur(3px)}
 }
 @keyframes rune-drift{
-  0%,20%,100%{opacity:0;transform:translateX(3rem) rotate(-9deg) skewX(-6deg)}
-  35%,48%{opacity:.16;transform:translateX(0) rotate(-9deg) skewX(-6deg)}
-  58%{opacity:.04;word-spacing:2rem}
-  70%{opacity:0;transform:translateX(-2rem) rotate(-9deg)}
+  0%,100%{opacity:.05;transform:translateX(2rem) rotate(-9deg) skewX(-6deg)}
+  20%,58%{opacity:.4;transform:translateX(0) rotate(-9deg) skewX(-6deg)}
+  66%{opacity:.12;word-spacing:2rem}
+  82%{opacity:.04;transform:translateX(-2rem) rotate(-9deg)}
 }
 @keyframes rune-warning{
-  0%,18%,100%{opacity:0;filter:blur(7px);letter-spacing:1.7em}
-  32%,50%{opacity:.2;filter:blur(0);letter-spacing:1.1em}
-  55%{opacity:.04;filter:blur(2px)}
-  61%{opacity:.16;filter:blur(0)}
-  72%{opacity:0;filter:blur(6px)}
+  0%,100%{opacity:.05;filter:blur(5px);letter-spacing:1.7em}
+  18%,54%{opacity:.46;filter:blur(0);letter-spacing:1.1em}
+  61%{opacity:.1;filter:blur(2px)}
+  68%{opacity:.36;filter:blur(0)}
+  84%{opacity:.05;filter:blur(4px)}
 }
 @keyframes rune-edge{
-  0%,25%,100%{opacity:0;filter:blur(4px)}
-  38%,62%{opacity:.24;filter:blur(0)}
-  72%{opacity:.03;filter:blur(3px)}
+  0%,100%{opacity:.05;filter:blur(3px)}
+  20%,68%{opacity:.45;filter:blur(0)}
+  80%{opacity:.08;filter:blur(2px)}
 }
 @media(max-width:760px){
   .void-hero::before{left:2%;top:14%;font-size:.65rem}
