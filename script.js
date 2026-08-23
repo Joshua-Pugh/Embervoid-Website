@@ -96,15 +96,33 @@ const wisdom = [
   '“Not without ale.”',
   '“You’re tighter than a dwarf’s coin purse on tax day.”',
   '“Almost feels rude to spoil it by surviving the night.”',
-  'Bhalmuck is drinking. Try again.'
+  '“May the gods piss on this cursed valley!”',
+  '“I’m blaming the road because it’s as cursed as a goblin’s breath and twice as treacherous!”',
+  '“Knew there had to be a man buried under all that misery.”',
+  '“After what I just survived, the least you two bastards can do is buy me a drink.”',
+  '“Nothin’ like fresh mountain air and a mug of ale to get yer giblets goin’, lads!”',
+  '“More for me.”',
+  '“You a scholar, Blackwell?”',
+  '“Depends which road you take. Take the wrong one and a hundred might be generous.”',
+  '“If you two are gonna kill each other, do it somewhere I’m not tryin’ to sleep.”',
+  '“That looks older than a witch’s mole.”',
+  '“Aye. Quality craftsmanship.”',
+  '“Lovely. Can’t wait to be roped into someone else’s mess again.”',
+  'Bhalmuck is drinking. Try again.',
+  'Bhalmuck has wandered off to find his horse.',
+  'This wisdom requires another ale.',
+  'Bhalmuck denies ever saying that.',
+  'The dwarf is currently unavailable for comment.'
 ];
 let wisdomIndex = 0;
 const quote = document.querySelector('#bhalmuck-quote');
+const quoteCredit = document.querySelector('#quote-credit');
 document.querySelector('#another-round').addEventListener('click', () => {
   wisdomIndex = (wisdomIndex + 1) % wisdom.length;
   quote.classList.remove('quote-change');
   void quote.offsetWidth;
   quote.textContent = wisdom[wisdomIndex];
+  quoteCredit.hidden = !wisdom[wisdomIndex].startsWith('“');
   quote.classList.add('quote-change');
 });
 
