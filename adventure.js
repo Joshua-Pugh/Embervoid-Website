@@ -159,14 +159,18 @@ function attack(){
 function enemyTurn(){
   if(!state.combat||state.combat.hp<=0)return winCombat();
   const raw=Math.floor(Math.random()*20)+1,total=raw+state.combat.attack,target=state.ac+(state.defending?2:0),hit=raw===20||total>=target;
-  if(hit){const amount=Math.floor(Math.random()*4)+1;damage('health',amount,`The sentry rolls ${raw} + ${state.combat.attack} (${total}), hits AC ${target}, and deals ${amount} damage.`);}
-  else log(`The sentry rolls ${raw} + ${state.combat.attack} (${total}) and misses AC ${target}.`);
+  let enemyMessage;
+  if(hit){const amount=Math.floor(Math.random()*4)+1;enemyMessage=`The sentry rolls ${raw} + ${state.combat.attack} (${total}), hits AC ${target}, and deals ${amount} damage.`;damage('health',amount,enemyMessage);}
+  else{enemyMessage=`The sentry rolls ${raw} + ${state.combat.attack} (${total}) and misses AC ${target}.`;log(enemyMessage);}
+  $('#roll-stage').hidden=false;$('#roll-stage').className=`roll-stage enemy-roll ${hit?'failure':'success'}`;$('#game-roll').textContent=raw;
+  $('#roll-formula').textContent=`Enemy attack: d20 + ${state.combat.attack} against your AC ${target}`;$('#roll-verdict').textContent=hit?enemyMessage:`The axe misses — ${raw} + ${state.combat.attack} = ${total}`;
+  if(state.combat){state.combat.lastAction=enemyMessage;updateCombatText();}
   if(state.health<=0)return go('defeat');
-  setTimeout(combatTurn,650);
+  setTimeout(combatTurn,1700);
 }
 
 function winCombat(){log('The Runic Sentry falls silent. The forge doors open.');state.combat=null;state.defending=false;go('forge');}
-function updateCombatText(){$('#story-text').innerHTML=`<p>The Runic Sentry advances through the dark, stone axe raised. Its bronze body bears fresh marks from the fight.</p><div class="enemy-status"><span>${state.combat.name}</span><strong>${state.combat.hp}/${state.combat.maxHp} health · AC ${state.combat.ac}</strong><i style="--enemy-health:${state.combat.hp/state.combat.maxHp*100}%"></i></div>`;}
+function updateCombatText(){$('#story-text').innerHTML=`<p>The Runic Sentry advances through the dark, stone axe raised. Its bronze body bears fresh marks from the fight.</p><div class="enemy-status"><span>${state.combat.name}</span><strong>${state.combat.hp}/${state.combat.maxHp} health · AC ${state.combat.ac}</strong><i style="--enemy-health:${state.combat.hp/state.combat.maxHp*100}%"></i></div>${state.combat.lastAction?`<p class="combat-action">${state.combat.lastAction}</p>`:''}`;}
 function addChoice(label,hint,action){const b=document.createElement('button');b.type='button';b.className='choice';b.innerHTML=`<span>${label}</span><small>${hint}</small>`;b.addEventListener('click',action);$('#choices').append(b);}
 
 function wrongRiddle(){damage('health',1,'A hidden dart answers the wrong rune.');log('Pressed the wrong answer at the statue.');go('riddle');}
@@ -177,9 +181,12 @@ function addClue(clue){if(!state.clues.includes(clue)){state.clues.push(clue);lo
 function log(entry){state.journal.push(entry);updateStats();}
 function save(){if(state.character)localStorage.setItem(SAVE_KEY,JSON.stringify(state));}
 function renderEnding(name){
-  const box=$('#choices');box.innerHTML=`<div class="tutorial"><strong>${name}</strong><br>Your journey is complete. Different explorers, clues, and final answers can reveal other endings.</div>`;
+  const fallen=name==='FALLEN BENEATH THE MOSS';
+  const bhalmuck=fallen?bhalmuckDeathRemark():'';
+  const box=$('#choices');box.innerHTML=`<div class="tutorial"><strong>${name}</strong><br>${fallen?'Your explorer has fallen. The ruins remember another name.':'Your journey is complete. Different explorers, clues, and final answers can reveal other endings.'}</div>${bhalmuck?`<aside class="bhalmuck-verdict"><span>Bhalmuck’s assessment</span><blockquote>“${bhalmuck}”</blockquote><small>— Bhalmuck Stormbane</small></aside>`:''}`;
   const again=document.createElement('button');again.className='choice';again.innerHTML='<span>Play again</span><small>Choose another explorer</small>';again.onclick=restart;box.append(again);
 }
+function bhalmuckDeathRemark(){const lines=state.poisoned?["Bitten by a snake beside a dead man killed by a snake. The gods handed you the answer, lad.","There was antivenom in the camp. I know because I nearly drank it myself."]:["I told you the statue was built to keep fools out. Seems it worked.","A heroic end, if we agree to use the word heroic very generously.","Should’ve brought a dwarf. Preferably this dwarf.","The good news is the trap only kills you once."];return lines[Math.floor(Math.random()*lines.length)];}
 function restart(){localStorage.removeItem(SAVE_KEY);location.reload();}
 
 document.querySelectorAll('[data-experience]').forEach(b=>b.addEventListener('click',()=>{state.experience=b.dataset.experience;welcome.hidden=true;characterScreen.hidden=false;}));

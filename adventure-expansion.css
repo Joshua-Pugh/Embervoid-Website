@@ -8,4 +8,5 @@
 .enemy-status span{color:#d5c9b8;text-transform:uppercase;letter-spacing:.16em}
 .enemy-status strong{margin-top:.5rem;color:#968d80;font-weight:400}
 .enemy-status i{display:block;height:3px;margin-top:1rem;background:linear-gradient(90deg,#9d493e var(--enemy-health),#32211f var(--enemy-health));transition:.5s}
+.enemy-roll{box-shadow:inset 4px 0 0 #a34b3d55}.combat-action{margin:1rem 0 0!important;padding:.8rem 1rem;border-left:2px solid #a34b3d;color:#d7c7b4!important;font-family:Inter,sans-serif!important;font-size:.76rem!important;line-height:1.6!important;background:#190b09}.bhalmuck-verdict{margin:1.3rem 0 2rem;padding:1.4rem;border:1px solid #b68e4840;background:radial-gradient(circle at 20% 20%,#7c4d2027,transparent 45%),#0d0a07}.bhalmuck-verdict>span,.bhalmuck-verdict small{text-transform:uppercase;letter-spacing:.17em;font-size:.5rem;color:#9b7d4e}.bhalmuck-verdict blockquote{margin:.8rem 0;font-size:1rem;line-height:1.6;color:#ded0b5}
 @media(max-width:450px){.vitals strong{font-size:1rem}.vitals span{font-size:.42rem}}
