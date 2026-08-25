@@ -4,7 +4,25 @@ const pageObserver=new IntersectionObserver(entries=>entries.forEach(e=>e.target
 document.querySelectorAll('[data-year]').forEach(e=>e.textContent=new Date().getFullYear());
 const extraStyle=document.createElement('link');extraStyle.rel='stylesheet';extraStyle.href='subpages.css';document.head.appendChild(extraStyle);
 const brand=document.querySelector('.page-header .brand');if(brand){const menu=document.createElement('button');menu.className='subpage-menu';menu.type='button';menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','Open navigation');menu.textContent='☰';brand.after(menu);const nav=document.querySelector('.page-header nav');menu.addEventListener('click',()=>{const open=nav.classList.toggle('is-open');menu.setAttribute('aria-expanded',String(open))})}
-const roadQuotes=['“I’ve met coffins with more warmth in them.”','“Not without ale.”','“You’re tighter than a dwarf’s coin purse on tax day.”','“Almost feels rude to spoil it by surviving the night.”','“That looks older than a witch’s mole.”','“If dwarves built it, you can bet they didn’t want it found.”'];let roadBag=[];const roadQuote=document.querySelector('#road-quote');const roadButton=document.querySelector('#another-road-round');if(roadButton)roadButton.addEventListener('click',()=>{if(!roadBag.length)roadBag=[...roadQuotes].sort(()=>Math.random()-.5);roadQuote.textContent=roadBag.pop()});
+const roadEntries=[
+  '“You always this pleasant, or did I catch you on a special day?”',
+  '“You’re tighter than a dwarf’s coin purse on tax day.”',
+  '“I’ve met coffins with more warmth in them.”',
+  '“Exactly. Traumatic experience.”',
+  '“Not without ale.”',
+  '“This horse has a spine like a cheap dagger.”',
+  '“Nothing finer in the land than dwarven defenses.”',
+  '“Those elves give me the creeps—always starin’ at you like you just farted in a temple.”',
+  '“Thanks for the scenic detour and near-death excursion. Been fun.”',
+  '“A cheerful little patch of forest. Almost feels rude to spoil it by surviving the night.”',
+  '“I might be drunk, but I’m not deaf.”',
+  '“That looks older than a witch’s mole.”',
+  '“If dwarves built it, you can bet they didn’t want it found.”',
+  'Bhalmuck is drinking. Try again.'
+];
+const shuffleRoad=entries=>{const bag=[...entries];for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}return bag};
+let roadBag=[];const roadQuote=document.querySelector('#road-quote');const roadButton=document.querySelector('#another-road-round');const roadCredit=document.querySelector('.road-wisdom small');
+if(roadButton){roadBag=shuffleRoad(roadEntries.filter(entry=>entry!==roadQuote.textContent));roadButton.addEventListener('click',()=>{if(!roadBag.length)roadBag=shuffleRoad(roadEntries.filter(entry=>entry!==roadQuote.textContent));const entry=roadBag.pop();const drinking=entry==='Bhalmuck is drinking. Try again.';roadQuote.classList.remove('quote-change');void roadQuote.offsetWidth;roadQuote.textContent=entry;roadQuote.classList.add('quote-change');if(roadCredit)roadCredit.hidden=drinking})}
 const completion=document.querySelector('#adventure-completion');if(completion){try{const save=JSON.parse(localStorage.getItem('embervoid-ruins-save-v2'));if(save?.ended){const lines={memoryEnd:'Not the worst choice a human ever made.',flameEnd:'Now you’ve touched something you don’t understand.',goldEnd:'Finally, an explorer with sensible priorities.',darkEnd:'Empty-handed is still better than dead.',defeat:'I told you the statue was built to keep fools out.'};completion.hidden=false;completion.innerHTML=`<strong>Bhalmuck disputes your account.</strong>“${lines[save.scene]||'Aye, I heard what happened. That is not how I remember it.'}”`;}}catch{}}
 const currentPage=(location.pathname.split('/').pop()||'index.html').replace('.html','');const depthByPage={book:1,world:2,calendar:3,gods:3,origins:3,archive:4,road:4,adventures:5,adventure:5,about:2};const depth=depthByPage[currentPage]||1;document.body.dataset.depth=depth;document.body.dataset.page=currentPage;document.documentElement.style.setProperty('--void-depth',depth);
 let remembered=[];try{remembered=JSON.parse(localStorage.getItem('embervoid-pages')||'[]')}catch{}const visited=new Set(remembered);visited.add(currentPage);localStorage.setItem('embervoid-pages',JSON.stringify([...visited]));
